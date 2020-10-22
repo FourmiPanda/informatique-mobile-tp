@@ -1,0 +1,19 @@
+{
+  "name": "01-mini-pwa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "angular-http-server -p 8081",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "https-localhost": "^4.6.3"
+  },
+  "dependencies": {
+    "angular-http-server": "^1.9.0"
+  }
+}
