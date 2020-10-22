@@ -1,6 +1,6 @@
-const getCard = (title, postedDate, image, brief) => {
+const getCard = (isDevFest, title, postedDate, image, brief) => {
     return `<ion-card>
-        <img src="https://devfest2018.gdgnantes.com${image}" />
+        <img src="${isDevFest ? 'https://devfest2018.gdgnantes.com' + image : image}" />
         <ion-card-header>
           <ion-card-subtitle>${postedDate.toDateString()}</ion-card-subtitle>
           <ion-card-title>${title}</ion-card-title>
@@ -12,24 +12,33 @@ const getCard = (title, postedDate, image, brief) => {
 }
 
 $.get( "https://devfest-nantes-2018-api.cleverapps.io/blog", function( data ) {
-    data.forEach((post, i) => {
-        $('#content').append(getCard(post.title, new Date(post.posted), post.image, post.brief))
+    data.forEach((post) => {
+        addPostOnTheWall(post, true);
+    })
+    getPosts((err, posts) => {
+        if (err) return console.error(err)
+        posts.forEach((post) => {
+            addPostOnTheWall(post, false);
+        })
     })
 });
+
+const addPostOnTheWall = (post, isDevFest) => {
+    $('#content').prepend(getCard(isDevFest, post.title, new Date(post.posted), post.image, post.brief))
+}
 
 $('#takePhoto').click(() => {
     let option = {
         allowEditing: false,
         webUseInput: true,
         quality: 70,
-        resultType: "uri",
+        resultType: "dataUrl",
         saveToGallery: false,
         source: "CAMERA",
         direction: "FRONT"
     }
     Capacitor.Plugins.Camera.getPhoto(option).then((done) => {
-        console.log(done)
-        presentModal({img: done.webPath});
+        presentModal({img: done.dataUrl});
     }).catch((error) => {
         console.error(error)
     })
@@ -51,18 +60,16 @@ customElements.define('modal-page', class extends HTMLElement {
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-<form>
     <img src="${modalElement.componentProps.img}" />
-    <ion-input hidden value="${modalElement.componentProps.img}"></ion-input>
+    <ion-input name="img" hidden value="${modalElement.componentProps.img}"></ion-input>
     <ion-item>
-      <ion-input placeholder="Titre" required="true"></ion-input>
+      <ion-input name="title" placeholder="Titre" required="true"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label position="stacked">Description</ion-label>
-      <ion-input></ion-input>
+      <ion-input name="brief"></ion-input>
     </ion-item>
-  <ion-button expand="block" type="submit">Enregistrer</ion-button>
-</form>
+  <ion-button expand="block" onClick="store()">Enregistrer</ion-button>
 </ion-content>`;
     }
 });
@@ -85,4 +92,33 @@ async function dismissModal() {
     await modal.dismiss({
         'dismissed': true
     });
+}
+
+function store() {
+    const post = {
+        title: document.querySelector('ion-input[name="title"]').value,
+        brief: document.querySelector('ion-input[name="brief"]').value,
+        image: document.querySelector('ion-input[name="img"]').value,
+        posted: new Date().getTime()
+    }
+    getPosts((err, posts) => {
+        if (err) {return console.error(err)}
+        posts.push(post)
+        Capacitor.Plugins.Storage.set({
+            key: 'posts',
+            value: JSON.stringify(posts)
+        }).then((done) => {
+            addPostOnTheWall(post, false);
+            dismissModal();
+        }).catch((err) => {
+            console.error(err)
+        })
+    });
+}
+
+function getPosts(cbk) {
+    return Capacitor.Plugins.Storage.get({key: 'posts'}).then(({value}) => {
+        if (!value) value = JSON.stringify([]);
+        return cbk(null,JSON.parse(value));
+    }).catch(cbk);
 }
