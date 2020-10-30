@@ -37,11 +37,18 @@ class _ConvertisseurDevisePage extends State<ConvertisseurDevisePage> {
           children: [
             Spacer(),
             Text(
-              'Valeur',
+              'Valeur : ' +  _valeur.toString(),
               style: AppStyle.labelStyle,
             ),
             Spacer(),
-            TextField( style: AppStyle.inputStyle,),
+            TextField( style: AppStyle.inputStyle,
+              onChanged: (saisie) {
+                var valeurSaisie = double.parse(saisie);
+                setState(() {
+                  _valeur = valeurSaisie;
+                });
+              },
+            ),
             Spacer(),
             Text(
               'De',
@@ -50,25 +57,45 @@ class _ConvertisseurDevisePage extends State<ConvertisseurDevisePage> {
             Spacer(),
             DropdownButton(
                 isExpanded: true,
-                onChanged: (newVal) => true,
-                items: [
-                  DropdownMenuItem<Devise>(child: Text('Val 1'),),
-                  DropdownMenuItem<Devise>(child: Text('Val 2'),),
-                ]),
+                onChanged: (Devise newVal) => {
+                    setState(() {
+                      _deviseInitial = newVal;
+                    })
+                },
+              value: _deviseInitial,
+              items: Devise.values
+                  .map<DropdownMenuItem<Devise>>((Devise value) {
+                return DropdownMenuItem<Devise>(
+                  value: value,
+                  child: Text(value.libelle),
+                );
+              }).toList(),),
             Spacer(),
             Text('Vers', style: AppStyle.labelStyle),
             Spacer(),
             DropdownButton(
                 isExpanded: true,
-                onChanged: (newVal) => true,
-                items: [
-                  DropdownMenuItem<Devise>(child: Text('Val 1'),),
-                  DropdownMenuItem<Devise>(child: Text('Val 2'),),
-                ]),
+                onChanged: (newVal) => {
+                  setState(() {
+                    _deviseFinale = newVal;
+                  })
+                },
+              value: _deviseFinale,
+              items: Devise.values
+                  .map<DropdownMenuItem<Devise>>((Devise value) {
+                return DropdownMenuItem<Devise>(
+                  value: value,
+                  child: Text(value.libelle),
+                );
+              }).toList(),),
             Spacer(
               flex: 2,
             ),
-            ElevatedButton(onPressed: () => true, child: Text('Convertir')),
+            ElevatedButton(onPressed: () => {
+              setState(() {
+                _resultat = (_valeur / _deviseInitial.t) * _deviseFinale.t ;
+              })
+            }, child: Text('Convertir')),
             Spacer(
               flex: 2,
             ),
