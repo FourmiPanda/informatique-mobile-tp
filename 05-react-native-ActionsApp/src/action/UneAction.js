@@ -13,7 +13,12 @@ const UneAction = ({action}) => (
             {action.title}
         </Text>
         <View style={styles.boutons}>
-
+            <BoutonAction
+                nom="Terminer"
+            />
+            <BoutonAction
+                nom="Supprimer"
+            />
         </View>
     </View>
 )
