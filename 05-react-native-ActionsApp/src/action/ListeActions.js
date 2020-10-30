@@ -1,13 +1,17 @@
 import React from 'react'
-import {View, Text} from 'react-native'
+import {View, Text, ScrollView} from 'react-native'
 import UneAction from './UneAction'
 
 
-const ListeActions = () => {
+const ListeActions = ({actions}) => {
 
     return (
         <View>
-            <Text>Ici prochainement une liste d'actions</Text>
+            {actions.map((prop) => {
+                return (
+                    <UneAction action={prop}/>
+                );
+            })}
         </View>
     )
 }
